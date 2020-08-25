@@ -29,31 +29,12 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>
         <kotlin.version>1.3.70</kotlin.version>
-        <spring-boot.version>2.3.3.RELEASE</spring-boot.version>
-        <!--        <spring-boot.version>1.5.8.RELEASE</spring-boot.version>-->
+<!--        <spring-boot.version>2.3.3.RELEASE</spring-boot.version>-->
+        <spring-boot.version>1.5.8.RELEASE</spring-boot.version>
         <graphql.version>7.1.0</graphql.version>
         <hibernate.version>4.3.6.Final</hibernate.version>
-<!--        <hibernate.version>4.3.11.Final</hibernate.version>-->
     </properties>
     <dependencies>
-
-<!--        &lt;!&ndash; graphql &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>com.graphql-java-kickstart</groupId>-->
-<!--            <artifactId>graphql-spring-boot-starter</artifactId>-->
-<!--            <version>${graphql.version}</version>-->
-<!--        </dependency>-->
-<!--        &lt;!&ndash; optional &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>com.graphql-java-kickstart</groupId>-->
-<!--            <artifactId>graphiql-spring-boot-starter</artifactId>-->
-<!--            <version>${graphql.version}</version>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>com.graphql-java-kickstart</groupId>-->
-<!--            <artifactId>voyager-spring-boot-starter</artifactId>-->
-<!--            <version>${graphql.version}</version>-->
-<!--        </dependency>-->
 
         <dependency>
             <groupId>org.postgresql</groupId>
@@ -95,106 +76,5 @@
     </build>
 
 
-
-
-<!--    <dependencyManagement>-->
-<!--        <dependencies>-->
-<!--            <dependency>-->
-<!--                &lt;!&ndash; https://www.javatpoint.com/spring-boot-starter-parent &ndash;&gt;-->
-<!--                &lt;!&ndash; Import dependency management from Spring Boot &ndash;&gt;-->
-<!--                <groupId>org.springframework.boot</groupId>-->
-<!--                <artifactId>spring-boot-dependencies</artifactId>-->
-<!--                <version>${spring-boot.version}</version>-->
-<!--                <type>pom</type>-->
-<!--                <scope>import</scope>-->
-<!--            </dependency>-->
-<!--        </dependencies>-->
-<!--    </dependencyManagement>-->
-
-
-<!--    <dependencies>-->
-        <!-- graphql -->
-<!--        <dependency>-->
-<!--            <groupId>com.graphql-java-kickstart</groupId>-->
-<!--            <artifactId>graphql-spring-boot-starter</artifactId>-->
-<!--            <version>${graphql.version}</version>-->
-<!--        </dependency>-->
-<!--        &lt;!&ndash; optional &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>com.graphql-java-kickstart</groupId>-->
-<!--            <artifactId>graphiql-spring-boot-starter</artifactId>-->
-<!--            <version>${graphql.version}</version>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>com.graphql-java-kickstart</groupId>-->
-<!--            <artifactId>voyager-spring-boot-starter</artifactId>-->
-<!--            <version>${graphql.version}</version>-->
-<!--        </dependency>-->
-
-
-        <!-- postgresql -->
-<!--        <dependency>-->
-<!--            <groupId>org.postgresql</groupId>-->
-<!--            <artifactId>postgresql</artifactId>-->
-<!--            <version>42.2.16</version>-->
-<!--        </dependency>-->
-        <!-- spring -->
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-starter-data-jpa</artifactId>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-starter-web</artifactId>-->
-<!--        </dependency>-->
-
-
-        <!-- Hibernate -->
-<!--        <dependency>-->
-<!--            <groupId>org.hibernate</groupId>-->
-<!--            <artifactId>hibernate-envers</artifactId>-->
-<!--        </dependency>-->
-
-<!--        <dependency>-->
-<!--            <groupId>org.projectlombok</groupId>-->
-<!--            <artifactId>lombok</artifactId>-->
-<!--            <version>1.18.12</version>-->
-<!--        </dependency>-->
-
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-starter-test</artifactId>-->
-<!--            <scope>test</scope>-->
-<!--            <exclusions>-->
-<!--                <exclusion>-->
-<!--                    <groupId>org.junit.vintage</groupId>-->
-<!--                    <artifactId>junit-vintage-engine</artifactId>-->
-<!--                </exclusion>-->
-<!--            </exclusions>-->
-<!--        </dependency>-->
-<!--    </dependencies>-->
-
-<!--    <build>-->
-<!--        <plugins>-->
-<!--            <plugin>-->
-<!--&lt;!&ndash;                <groupId>org.springframework.boot</groupId>&ndash;&gt;-->
-<!--&lt;!&ndash;                <artifactId>spring-boot-maven-plugin</artifactId>&ndash;&gt;-->
-<!--&lt;!&ndash;                <version>${spring-boot.version}</version>&ndash;&gt;-->
-
-<!--                <groupId>org.springframework.boot</groupId>-->
-<!--                <artifactId>spring-boot-maven-plugin</artifactId>-->
-<!--                <version>${spring-boot.version}</version>-->
-<!--            </plugin>-->
-
-<!--            <plugin>-->
-<!--                <groupId>org.apache.maven.plugins</groupId>-->
-<!--                <artifactId>maven-compiler-plugin</artifactId>-->
-<!--                <configuration>-->
-<!--                    <source>8</source>-->
-<!--                    <target>8</target>-->
-<!--                </configuration>-->
-<!--            </plugin>-->
-<!--        </plugins>-->
-<!--    </build>-->
 
 </project>
