@@ -8,6 +8,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ChargeCodeRest {
-    public Integer id;
-    public String name;
+    private Integer id;
+    private String name;
+    private String code;
+    private String description;
+    private boolean expired;
 }

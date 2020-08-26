@@ -1,7 +1,8 @@
 logging:
   level:
     root: INFO
-#    org.hibernate.SQL: DEBUG
+    #    org.hibernate: DEBUG
+    org.hibernate.SQL: DEBUG
 #    org.hibernate.type: TRACE
 
 server:
@@ -9,12 +10,14 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/jikanganai
+    url: jdbc:postgresql://localhost:5432/legacy
     driver: org.postgresql.Driver
     username: postgres
     password: password
-    name: jikanganai
+    name: legacy
   jpa:
+    hibernate:
+      naming-strategy: xw.legacyserver.configs.CamelCaseNamingStrategy
     properties:
       hibernate:
         enable_lazy_load_no_trans: true
