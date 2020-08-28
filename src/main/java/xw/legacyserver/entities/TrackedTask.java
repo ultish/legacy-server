@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.hibernate.envers.Audited;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -16,6 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Table(name = "trackedtasks")
+@Audited
 public class TrackedTask {
     @Id
     @GeneratedValue(generator = "sequence-generator")
