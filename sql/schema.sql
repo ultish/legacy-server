@@ -1,18 +1,23 @@
 
+    alter table REVCHANGES
+        drop constraint if exists FK_t69kea3hasj6uc6ddn5ck5r9y;
+
     alter table aud_chargecodes
-        drop constraint if exists FK_snv848sfybgaw8fg1l7v44qas;
+        drop constraint if exists FK_n0x7anlgsrdh3dmgjk16lhtcm;
 
     alter table aud_taskcodes
-        drop constraint if exists FK_skkc67x18vmtqyif3uddj258y;
+        drop constraint if exists FK_73n565v3pr6j3sug32ri5g1nq;
 
     alter table aud_trackedtasks
-        drop constraint if exists FK_q7c9mcchi7wviq7l486ufeqqa;
+        drop constraint if exists FK_sjtm4gun71fculslqyvqjymjm;
 
     alter table taskcodes
         drop constraint if exists FK_8q0mdns5dt9vhlp276he00yc6;
 
     alter table taskcodes
         drop constraint if exists FK_78apgsurnsqowd5ahvw9vomxq;
+
+    drop table REVCHANGES cascade;
 
     drop table REVINFO cascade;
 
@@ -34,6 +39,11 @@
 
     drop sequence trackedtasks_id_seq;
 
+    create table REVCHANGES (
+        rev int4 not null,
+        entityname varchar(255)
+    );
+
     create table REVINFO (
         rev int4 not null,
         revtstmp int8,
@@ -45,11 +55,18 @@
         rev int4 not null,
         revtype int2,
         code varchar(255),
+        code_mod boolean,
         "createdAt" timestamp,
+        "createdAt_mod" boolean,
         description varchar(255),
+        description_mod boolean,
         expired boolean,
+        expired_mod boolean,
         name varchar(255),
+        name_mod boolean,
         "updatedAt" timestamp,
+        "updatedAt_mod" boolean,
+        "trackedTasks_mod" boolean,
         primary key (id, rev)
     );
 
@@ -66,9 +83,14 @@
         rev int4 not null,
         revtype int2,
         "createdAt" timestamp,
+        "createdAt_mod" boolean,
         notes varchar(255),
+        notes_mod boolean,
         "overtimeEnabled" boolean,
+        "overtimeEnabled_mod" boolean,
         "updatedAt" timestamp,
+        "updatedAt_mod" boolean,
+        "chargeCodes_mod" boolean,
         primary key (id, rev)
     );
 
@@ -97,18 +119,23 @@
         primary key (id)
     );
 
+    alter table REVCHANGES
+        add constraint FK_t69kea3hasj6uc6ddn5ck5r9y
+        foreign key (rev)
+        references REVINFO;
+
     alter table aud_chargecodes
-        add constraint FK_snv848sfybgaw8fg1l7v44qas
+        add constraint FK_n0x7anlgsrdh3dmgjk16lhtcm
         foreign key (rev)
         references REVINFO;
 
     alter table aud_taskcodes
-        add constraint FK_skkc67x18vmtqyif3uddj258y
+        add constraint FK_73n565v3pr6j3sug32ri5g1nq
         foreign key (rev)
         references REVINFO;
 
     alter table aud_trackedtasks
-        add constraint FK_q7c9mcchi7wviq7l486ufeqqa
+        add constraint FK_sjtm4gun71fculslqyvqjymjm
         foreign key (rev)
         references REVINFO;
 

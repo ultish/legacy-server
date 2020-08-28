@@ -1,6 +1,12 @@
 package xw.legacyserver.controllers;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Value;
 import org.hibernate.envers.AuditReaderFactory;
+import org.hibernate.envers.RevisionType;
+import org.hibernate.envers.query.AuditEntity;
+import org.hibernate.envers.query.AuditQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -8,6 +14,7 @@ import org.springframework.web.client.RestClientException;
 import xw.legacyserver.dao.ChargeCodeDAO;
 import xw.legacyserver.dao.TrackedTaskDAO;
 import xw.legacyserver.entities.ChargeCode;
+import xw.legacyserver.entities.CustomRevisionEntity;
 import xw.legacyserver.entities.TrackedTask;
 import xw.legacyserver.rest.TrackedTaskRest;
 
@@ -46,6 +53,33 @@ public class TrackedTaskController {
         @PathVariable Integer revision
     ) {
         return AuditReaderFactory.get(em).find(TrackedTask.class, id, revision);
+    }
+
+    @GetMapping("/trackedtasks/audit/{id}/haschange/{property}")
+    public List<Tuple> auditChanges(
+        @PathVariable Integer id,
+        @PathVariable String property
+    ) {
+        AuditQuery query = AuditReaderFactory.get(em).createQuery()
+            .forRevisionsOfEntity(TrackedTask.class, false, true)
+            .add(AuditEntity.id().eq(id))
+            .add(AuditEntity.property(property).hasChanged());
+
+        List<Object[]> queryResult = query.getResultList();
+
+        List<Tuple> result = queryResult.stream().map(o -> {
+            TrackedTask tt = (TrackedTask) o[0];
+            CustomRevisionEntity revision = (CustomRevisionEntity) o[1];
+            RevisionType type = (RevisionType) o[2];
+            return new Tuple(
+                tt,
+                revision.getRev(),
+                new Date(revision.getRevtstmp()),
+                type
+            );
+        }).collect(Collectors.toList());
+
+        return result;
     }
 
     @GetMapping("/trackedtasks")
@@ -97,5 +131,15 @@ public class TrackedTaskController {
         existing.setNotes(trackedTask.getNotes());
         existing.setOvertimeEnabled(trackedTask.getOvertimeEnabled());
         return trackedTaskDAO.save(existing);
+    }
+
+    @Value
+    @Data
+    @AllArgsConstructor
+    private class Tuple {
+        TrackedTask trackedTask;
+        Integer rev;
+        Date revtstmp;
+        RevisionType revType;
     }
 }

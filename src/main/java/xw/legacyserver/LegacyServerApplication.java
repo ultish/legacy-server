@@ -33,6 +33,18 @@ public class LegacyServerApplication {
         );
         config.setProperty("org.hibernate.envers.audit_table_prefix", "aud_");
         config.setProperty("org.hibernate.envers.audit_table_suffix", "");
+        config.setProperty(
+            "org.hibernate.envers.global_with_modified_flag",
+            "true"
+        );
+        config.setProperty(
+            "org.hibernate.envers.revision_type_field_name",
+            "revtype"
+        );
+        config.setProperty("org.hibernate.envers.revision_field_name", "rev");
+        config.setProperty("org.hibernate.envers.modified_flag_suffix", "_mod");
+        config.setProperty("org.hibernate.envers" +
+            ".track_entities_changed_in_revision", "true");
 
         //add all of your entities
         config.addAnnotatedClass(ChargeCode.class);

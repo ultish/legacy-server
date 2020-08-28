@@ -23,15 +23,19 @@ spring:
           envers:
             audit_table_prefix:
     properties:
-
       org:
         hibernate:
           envers:
+            modified_flag_suffix: "_mod"
+            global_with_modified_flag: true
             revision_type_field_name: "revtype"
             revision_field_name: "rev"
             audit_table_prefix: "aud_"
             audit_table_suffix: ""
       hibernate:
+        listeners:
+          envers:
+            autoRegister: false
         enable_lazy_load_no_trans: true
         show_sql: true
         format_sql: true
