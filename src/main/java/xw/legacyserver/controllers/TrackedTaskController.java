@@ -1,5 +1,6 @@
 package xw.legacyserver.controllers;
 
+import org.hibernate.envers.AuditReaderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +11,8 @@ import xw.legacyserver.entities.ChargeCode;
 import xw.legacyserver.entities.TrackedTask;
 import xw.legacyserver.rest.TrackedTaskRest;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -23,6 +26,27 @@ public class TrackedTaskController {
     TrackedTaskDAO trackedTaskDAO;
     @Autowired
     ChargeCodeDAO chargeCodeDAO;
+    @PersistenceContext
+    EntityManager em;
+
+    @GetMapping("/trackedtasks/audit/{id}/revisions")
+    @ResponseBody
+    public List<Number> revisions(
+        @PathVariable Integer id
+    ) {
+        List<Number> revisionNumbers =
+            AuditReaderFactory.get(em).getRevisions(TrackedTask.class, id);
+        return revisionNumbers;
+    }
+
+    @GetMapping("/trackedtasks/audit/{id}/{revision}")
+    @ResponseBody
+    public TrackedTask audit(
+        @PathVariable Integer id,
+        @PathVariable Integer revision
+    ) {
+        return AuditReaderFactory.get(em).find(TrackedTask.class, id, revision);
+    }
 
     @GetMapping("/trackedtasks")
     @ResponseBody
