@@ -43,7 +43,7 @@ public class CustomIntegrator implements Integrator {
                 )
             );
             listenerRegistry.appendListeners(
-                EventType.POST_INSERT, new CustomEnversListener(
+                EventType.POST_INSERT, new CustomEnversPostInsertEventListener(
                     enversConfiguration
                 )
             );

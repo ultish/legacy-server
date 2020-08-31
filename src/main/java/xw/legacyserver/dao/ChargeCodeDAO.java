@@ -31,8 +31,10 @@ public class ChargeCodeDAO {
     public ChargeCode save(ChargeCode cc) {
         if (cc.getId() == null) {
             cc.setCreatedAt(new Date());
+            cc.setUpdatedAt(new Date());
         }
-        cc.setUpdatedAt(new Date());
+        // TODO disabled to test event firing
+        //        cc.setUpdatedAt(new Date());
         em.persist(cc);
         return cc;
     }

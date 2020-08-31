@@ -30,8 +30,10 @@ public class TrackedTaskDAO {
     public TrackedTask save(TrackedTask tt) {
         if (tt.getId() == null) {
             tt.setCreatedAt(new Date());
+            tt.setUpdatedAt(new Date());
         }
-        tt.setUpdatedAt(new Date());
+        // TODO disabled to test event firing
+        //        tt.setUpdatedAt(new Date());
         em.persist(tt);
         return tt;
     }

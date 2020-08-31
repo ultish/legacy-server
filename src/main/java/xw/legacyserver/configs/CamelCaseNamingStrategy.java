@@ -25,7 +25,7 @@ public class CamelCaseNamingStrategy extends EJB3NamingStrategy {
 
     @Override
     public String propertyToColumnName(String propertyName) {
-        System.out.println("HUH " + propertyName);
+        //        System.out.println("HUH " + propertyName);
         if (Pattern.compile("[A-Z]+").matcher(propertyName).find()) {
             return "\"" + propertyName + "\"";
         } else {
@@ -38,14 +38,14 @@ public class CamelCaseNamingStrategy extends EJB3NamingStrategy {
         String joinedColumn, String joinedTable
     ) {
 
-        System.out.println("++++joinedColumn " + joinedColumn);
-
-        System.out.println("++++joinedTable " + joinedTable);
-
-        System.out.println("++++result " + super.joinKeyColumnName(
-            joinedColumn,
-            joinedTable
-        ));
+        //        System.out.println("++++joinedColumn " + joinedColumn);
+        //
+        //        System.out.println("++++joinedTable " + joinedTable);
+        //
+        //        System.out.println("++++result " + super.joinKeyColumnName(
+        //            joinedColumn,
+        //            joinedTable
+        //        ));
         return super.joinKeyColumnName(joinedColumn, joinedTable);
     }
 
@@ -57,10 +57,13 @@ public class CamelCaseNamingStrategy extends EJB3NamingStrategy {
         String referencedColumnName
     ) {
 
-        System.out.println("++++propertyName " + propertyName);
-        System.out.println("++++propertyEntityName " + propertyEntityName);
-        System.out.println("++++propertyTableName " + propertyTableName);
-        System.out.println("++++referencedColumnName " + referencedColumnName);
+        //        System.out.println("++++propertyName " + propertyName);
+        //        System.out.println("++++propertyEntityName " +
+        //        propertyEntityName);
+        //        System.out.println("++++propertyTableName " +
+        //        propertyTableName);
+        //        System.out.println("++++referencedColumnName " +
+        //        referencedColumnName);
 
         return super.foreignKeyColumnName(
             propertyName,
