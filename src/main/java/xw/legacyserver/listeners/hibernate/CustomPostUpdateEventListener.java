@@ -56,23 +56,30 @@ public class CustomPostUpdateEventListener implements
     public void onPostRecreateCollection(PostCollectionRecreateEvent event) {
         System.out.println("post recreate collection");
         String ownerEntityName = event.getAffectedOwnerEntityName();
-        Serializable affectedOwnerIdOrNull =
-            event.getAffectedOwnerIdOrNull();
-        Object affectedOwnerOrNull = event.getAffectedOwnerOrNull();
 
-        Object value = event.getCollection().getValue();
+        // always check if we need to do something with this owner entity
+        if (ownerEntityName.equals("xw.legacyserver.entities.TrackedTask") || ownerEntityName
+            .equals("xw.legacyserver.entities.ChargeCode")) {
 
-        CollectionEntry collectionEntry = event.getSession()
-            .getPersistenceContext()
-            .getCollectionEntry(event.getCollection());
+            Serializable affectedOwnerIdOrNull =
+                event.getAffectedOwnerIdOrNull();
+            Object affectedOwnerOrNull = event.getAffectedOwnerOrNull();
 
-        System.out.println("\tName: " + ownerEntityName);
-        System.out.println("\tID: " + affectedOwnerIdOrNull);
-        System.out.println("\tInverse: " +
-            collectionEntry.getLoadedPersister().isInverse());
-        print(affectedOwnerOrNull);
+            Object value = event.getCollection().getValue();
+
+            CollectionEntry collectionEntry = event.getSession()
+                .getPersistenceContext()
+                .getCollectionEntry(event.getCollection());
+
+            System.out.println("\tName: " + ownerEntityName);
+            System.out.println("\tID: " + affectedOwnerIdOrNull);
+            System.out.println("\tInverse: " +
+                collectionEntry.getLoadedPersister().isInverse());
+            print(affectedOwnerOrNull);
+        } else {
+            System.out.println("skip " + ownerEntityName);
+        }
         System.out.println("/post recreate collection----------\n");
-
     }
 
     @Override
