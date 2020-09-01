@@ -15,10 +15,10 @@ public class CustomListenerConfigurer {
     @PersistenceUnit
     private EntityManagerFactory emf;
 
-    private CustomPostUpdateEventListener postUpdateEventListener;
+    private CustomKafkaHibernateListener postUpdateEventListener;
 
     @Autowired
-    public CustomListenerConfigurer(CustomPostUpdateEventListener postUpdateEventListener) {
+    public CustomListenerConfigurer(CustomKafkaHibernateListener postUpdateEventListener) {
         this.postUpdateEventListener = postUpdateEventListener;
     }
 

@@ -13,13 +13,13 @@ import java.util.Date;
 import java.util.List;
 
 @Data
-@EqualsAndHashCode(exclude = "trackedTasks")
+@EqualsAndHashCode(callSuper = true, exclude = "trackedTasks")
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Table(name = "chargecodes")
 @Audited
-public class ChargeCode {
+public class ChargeCode extends IEntity {
     @Id
     @GeneratedValue(generator = "cc-sequence-generator")
     @GenericGenerator(name = "cc-sequence-generator",
@@ -43,4 +43,9 @@ public class ChargeCode {
     @JsonIgnoreProperties({"chargeCodes"})
     @ManyToMany(mappedBy = "chargeCodes")
     private List<TrackedTask> trackedTasks;
+
+    @Override
+    public String getKey() {
+        return id.toString();
+    }
 }

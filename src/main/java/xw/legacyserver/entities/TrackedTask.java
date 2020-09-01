@@ -14,13 +14,13 @@ import java.util.Date;
 import java.util.List;
 
 @Data
-@EqualsAndHashCode(exclude = "chargeCodes")
+@EqualsAndHashCode(callSuper = true, exclude = "chargeCodes")
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Table(name = "trackedtasks")
 @Audited
-public class TrackedTask {
+public class TrackedTask extends IEntity {
     @Id
     @GeneratedValue(generator = "sequence-generator")
     @GenericGenerator(name = "sequence-generator",
@@ -47,6 +47,10 @@ public class TrackedTask {
     private Date updatedAt;
     private Boolean overtimeEnabled;
 
+    @Override
+    public String getKey() {
+        return id.toString();
+    }
 }
 
 
