@@ -1,7 +1,7 @@
 package xw.legacyserver;
 
 import org.hibernate.cfg.Configuration;
-import org.hibernate.envers.tools.hbm2ddl.EnversSchemaGenerator;
+import org.hibernate.tool.EnversSchemaGenerator;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

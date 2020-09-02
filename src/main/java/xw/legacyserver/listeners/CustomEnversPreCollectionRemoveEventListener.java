@@ -1,7 +1,7 @@
 package xw.legacyserver.listeners;
 
-import org.hibernate.envers.configuration.spi.AuditConfiguration;
-import org.hibernate.envers.event.spi.EnversPreCollectionRemoveEventListenerImpl;
+import org.hibernate.envers.configuration.AuditConfiguration;
+import org.hibernate.envers.event.EnversPreCollectionRemoveEventListenerImpl;
 
 public class CustomEnversPreCollectionRemoveEventListener
     extends EnversPreCollectionRemoveEventListenerImpl {

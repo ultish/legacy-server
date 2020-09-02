@@ -1,7 +1,7 @@
 package xw.legacyserver.listeners;
 
-import org.hibernate.envers.configuration.spi.AuditConfiguration;
-import org.hibernate.envers.event.spi.EnversPostUpdateEventListenerImpl;
+import org.hibernate.envers.configuration.AuditConfiguration;
+import org.hibernate.envers.event.EnversPostUpdateEventListenerImpl;
 
 public class CustomEnversPostUpdateEventListener
     extends EnversPostUpdateEventListenerImpl {

@@ -1,14 +1,14 @@
 package xw.legacyserver.listeners;
 
-import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.envers.configuration.spi.AuditConfiguration;
-import org.hibernate.envers.event.spi.EnversListenerDuplicationStrategy;
+import org.hibernate.envers.configuration.AuditConfiguration;
+import org.hibernate.envers.event.EnversListenerDuplicationStrategy;
 import org.hibernate.event.service.spi.EventListenerRegistry;
 import org.hibernate.event.spi.EventType;
 import org.hibernate.integrator.spi.Integrator;
 import org.hibernate.metamodel.source.MetadataImplementor;
+import org.hibernate.service.classloading.spi.ClassLoaderService;
 import org.hibernate.service.spi.SessionFactoryServiceRegistry;
 
 public class CustomIntegrator implements Integrator {

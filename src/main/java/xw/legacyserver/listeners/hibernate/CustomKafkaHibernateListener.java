@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hibernate.engine.spi.CollectionEntry;
 import org.hibernate.envers.RevisionType;
 import org.hibernate.event.spi.*;
-import org.hibernate.persister.entity.EntityPersister;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -84,10 +83,10 @@ public class CustomKafkaHibernateListener implements
         streamToKafka(event, RevisionType.ADD, event.getEntity());
     }
 
-    @Override
-    public boolean requiresPostCommitHanding(EntityPersister persister) {
-        return false;
-    }
+    //    @Override
+    //    public boolean requiresPostCommitHanding(EntityPersister persister) {
+    //        return false;
+    //    }
 
     @Override
     public void onPostRecreateCollection(PostCollectionRecreateEvent event) {

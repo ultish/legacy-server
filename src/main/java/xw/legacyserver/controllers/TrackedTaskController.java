@@ -26,8 +26,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@RestController
 @Transactional
+@RestController()
+@RequestMapping("/trackedtasks")
 public class TrackedTaskController {
     @Autowired
     TrackedTaskDAO trackedTaskDAO;
@@ -36,27 +37,38 @@ public class TrackedTaskController {
     @PersistenceContext
     EntityManager em;
 
-    @GetMapping("/trackedtasks/audit/{id}/revisions")
+    // Spring 4.3+    @GetMapping("/trackedtasks/audit/{id}/revisions")
+    @RequestMapping(method = RequestMethod.GET,
+        value = "/audit/{id}/revisions")
     @ResponseBody
-    public List<Number> revisions(
+    public List<Number> revisionsTrackedTask(
         @PathVariable Integer id
     ) {
         List<Number> revisionNumbers =
-            AuditReaderFactory.get(em).getRevisions(TrackedTask.class, id);
+            AuditReaderFactory.get(em).getRevisions(
+                TrackedTask.class,
+                id
+            );
         return revisionNumbers;
     }
 
-    @GetMapping("/trackedtasks/audit/{id}/{revision}")
+    // @GetMapping("/trackedtasks/audit/{id}/{revision}")
+    @RequestMapping(method = RequestMethod.GET,
+        value = "/audit/{id}/{revision}")
     @ResponseBody
-    public TrackedTask audit(
+    public TrackedTask auditTrackedTask(
         @PathVariable Integer id,
         @PathVariable Integer revision
     ) {
-        return AuditReaderFactory.get(em).find(TrackedTask.class, id, revision);
+        return AuditReaderFactory.get(em).find(TrackedTask.class, id,
+            revision
+        );
     }
 
-    @GetMapping("/trackedtasks/audit/{id}/haschange/{property}")
-    public List<Tuple> auditChanges(
+    //    @GetMapping("/trackedtasks/audit/{id}/haschange/{property}")
+    @RequestMapping(method = RequestMethod.GET,
+        value = "/audit/{id}/haschange/{property}")
+    public List<Tuple> auditChangesTrackedTask(
         @PathVariable Integer id,
         @PathVariable String property
     ) {
@@ -82,13 +94,15 @@ public class TrackedTaskController {
         return result;
     }
 
-    @GetMapping("/trackedtasks")
+    //    @GetMapping("/trackedtasks")
+    @RequestMapping(method = RequestMethod.GET)
     @ResponseBody
-    public List<TrackedTask> getAll() {
+    public List<TrackedTask> getAllTrackedTasks() {
         return trackedTaskDAO.findAll();
     }
 
-    @PostMapping("/trackedtasks")
+    //    @PostMapping("/trackedtasks")
+    @RequestMapping(method = RequestMethod.POST)
     @ResponseBody
     public TrackedTask create(@RequestBody TrackedTaskRest trackedTask) {
         List<ChargeCode> cc = new ArrayList<>();
@@ -105,8 +119,9 @@ public class TrackedTaskController {
         return trackedTaskDAO.save(tt);
     }
 
-    @PutMapping("/trackedtasks/{id}")
-    @ResponseBody
+    //    @PutMapping("/trackedtasks/{id}")
+    @RequestMapping(method = RequestMethod.PUT, value = "/{id}")
+    //    @ResponseBody
     public TrackedTask update(
         @RequestBody TrackedTaskRest trackedTask,
         @PathVariable Integer id

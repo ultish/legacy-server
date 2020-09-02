@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @Transactional
+@RequestMapping("/chargecodes")
 public class ChargeCodeController {
 
     @Autowired
@@ -32,9 +33,11 @@ public class ChargeCodeController {
     @PersistenceContext
     EntityManager em;
 
-    @GetMapping("/chargecodes/audit/{id}/revisions")
+    // Spring 4.3+   @GetMapping("/chargecodes/audit/{id}/revisions")
+    @RequestMapping(method = RequestMethod.GET,
+        value = "/audit/{id}/revisions")
     @ResponseBody
-    public List<Number> revisions(
+    public List<Number> revisionsChargeCode(
         @PathVariable Integer id
     ) {
         List<Number> revisionNumbers =
@@ -42,17 +45,24 @@ public class ChargeCodeController {
         return revisionNumbers;
     }
 
-    @GetMapping("/chargecodes/audit/{id}/{revision}")
+    //    @GetMapping("/chargecodes/audit/{id}/{revision}")
+    @RequestMapping(method = RequestMethod.GET,
+        value = "/audit/{id}/{revision}")
     @ResponseBody
-    public ChargeCode audit(
+    public ChargeCode auditChargeCode(
         @PathVariable Integer id,
         @PathVariable Integer revision
     ) {
-        return AuditReaderFactory.get(em).find(ChargeCode.class, id, revision);
+        return AuditReaderFactory.get(em).find(ChargeCode.class, id,
+            revision
+        );
     }
 
-    @GetMapping("/chargecodes/audit/{id}/haschange/{property}")
-    public List<Tuple> auditChanges(
+    //    @GetMapping("/chargecodes/audit/{id}/haschange/{property}")
+    @RequestMapping(method = RequestMethod.GET,
+        value = "/audit/{id}/haschange/{property}")
+    @ResponseBody
+    public List<Tuple> auditChangesChargeCode(
         @PathVariable Integer id,
         @PathVariable String property
     ) {
@@ -78,13 +88,15 @@ public class ChargeCodeController {
         return result;
     }
 
-    @GetMapping("/chargecodes")
+    //    @GetMapping("/chargecodes")
+    @RequestMapping(method = RequestMethod.GET)
     @ResponseBody
     public List<ChargeCode> changecodes() {
         return chargeCodeDAO.findAll();
     }
 
-    @PostMapping(value = "/chargecodes")
+    //    @PostMapping(value = "/chargecodes")
+    @RequestMapping(method = RequestMethod.POST)
     @ResponseBody
     public ChargeCode createChargeCode(
         @RequestBody ChargeCodeRest chargeCode
@@ -96,7 +108,8 @@ public class ChargeCodeController {
         return chargeCodeDAO.save(cc);
     }
 
-    @PutMapping("/chargecodes/{id}")
+    //    @PutMapping("/chargecodes/{id}")
+    @RequestMapping(method = RequestMethod.PUT, value = "/{id}")
     @ResponseBody
     public ChargeCode update(
         @RequestBody ChargeCodeRest chargeCode,
