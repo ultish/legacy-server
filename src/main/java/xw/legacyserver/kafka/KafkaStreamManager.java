@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-import xw.legacyserver.entities.IEntity;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,7 +16,7 @@ public class KafkaStreamManager {
 
     private final Map<Transaction, KafkaStreamProcess> kafkaStreamMap;
     @Autowired
-    private KafkaTemplate<KafkaKey, IEntity> kafkaTemplate;
+    private KafkaTemplate<KafkaKey, KafkaData> kafkaTemplate;
 
     @Value("${kafka.topic}")
     private String kafkaTopic;

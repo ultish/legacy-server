@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import xw.legacyserver.entities.IEntity;
+import xw.legacyserver.kafka.KafkaData;
 import xw.legacyserver.kafka.KafkaKey;
 import xw.legacyserver.kafka.KafkaStreamManager;
 
@@ -35,7 +36,7 @@ public class CustomKafkaHibernateListener implements
     PostCollectionRecreateEventListener {
 
     @Autowired
-    private KafkaTemplate<KafkaKey, IEntity> kafkaTemplate;
+    private KafkaTemplate<KafkaKey, KafkaData> kafkaTemplate;
 
     @Autowired
     private KafkaStreamManager kafkaStreamManager;

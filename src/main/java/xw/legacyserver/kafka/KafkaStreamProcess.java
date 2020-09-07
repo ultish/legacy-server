@@ -1,5 +1,6 @@
 package xw.legacyserver.kafka;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.hibernate.action.spi.AfterTransactionCompletionProcess;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.envers.RevisionType;
@@ -16,7 +17,7 @@ import java.util.Map;
  * Holds any data to be streamed to Kafa within the current Transaction
  */
 public class KafkaStreamProcess implements AfterTransactionCompletionProcess {
-    private final KafkaTemplate<KafkaKey, IEntity> kafkaTemplate;
+    private final KafkaTemplate<KafkaKey, KafkaData> kafkaTemplate;
     private final String kafkaTopic;
 
     private SessionImplementor session;
@@ -27,7 +28,7 @@ public class KafkaStreamProcess implements AfterTransactionCompletionProcess {
 
     public KafkaStreamProcess(
         SessionImplementor session,
-        KafkaTemplate<KafkaKey, IEntity> kafkaTemplate,
+        KafkaTemplate<KafkaKey, KafkaData> kafkaTemplate,
         String kafkaTopic
     ) {
         this.session = session;
@@ -85,10 +86,14 @@ public class KafkaStreamProcess implements AfterTransactionCompletionProcess {
                 KafkaStreamPair<RevisionType, IEntity>> entry : work
                 .entrySet()) {
 
-                sendMessage(
-                    entry.getValue().getLeft(),
-                    entry.getValue().getRight()
-                );
+                try {
+                    sendMessage(
+                        entry.getValue().getLeft(),
+                        entry.getValue().getRight()
+                    );
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                }
 
             }
         } else {
@@ -96,24 +101,23 @@ public class KafkaStreamProcess implements AfterTransactionCompletionProcess {
         }
     }
 
-    private void sendMessage(RevisionType revisionType, IEntity o) {
+    private void sendMessage(RevisionType revisionType, IEntity o) throws
+        JsonProcessingException {
 
         KafkaKey key = new KafkaKey(revisionType,
             o.getKey(), o.getClass().getCanonicalName()
         );
 
-        ListenableFuture<SendResult<KafkaKey, IEntity>> future =
+        ListenableFuture<SendResult<KafkaKey, KafkaData>> future =
             kafkaTemplate.send(
-                kafkaTopic,
-                key,
-                o
+                kafkaTopic, new KafkaData(key, o)
             );
 
         future.addCallback(new ListenableFutureCallback<SendResult<KafkaKey,
-            IEntity>>() {
+            KafkaData>>() {
 
             @Override
-            public void onSuccess(SendResult<KafkaKey, IEntity> result) {
+            public void onSuccess(SendResult<KafkaKey, KafkaData> result) {
                 System.out.println("Sent message ID=[" + result.getProducerRecord()
                     .key() + "] with " +
                     "offset=[" + result.getRecordMetadata()

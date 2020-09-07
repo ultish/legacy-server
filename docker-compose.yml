@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+  neo4j:
+    image: neo4j:4.0.8
+    network_mode: "bridge"
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      - NEO4J_dbms_security_procedures_unrestricted="apoc.*"
+      # - NEO4J_dbms_security_procedures_whitelist="apoc.*"
+      - NEO4J_apoc_import_file_enabled=true
+      - NEO4JLABS_PLUGINS=["apoc","streams"]
+      - NEO4J_AUTH=neo4j/test
+      - NEO4J_kafka_zookeeper_connect=192.168.1.111:2181
+      - NEO4J_kafka_bootstrap_servers=192.168.1.111:9092
+      # - NEO4J_kafka_group_id=neo4j
+      - NEO4J_kafka_enable_auto_commit=true
+      - NEO4J_kafka_key_deserializer=org.apache.kafka.common.serialization.ByteArrayDeserializer
+      - NEO4J_kafka_value_deserializer=org.apache.kafka.common.serialization.ByteArrayDeserializer
+      - NEO4J_streams_sink_enabled=true
+      # - NEO4J_streams_sink_topic_cdc_sourceId=datastream
+      # - NEO4J_streams_sink_topic_pattern_node_datastream=TrackedTask{!event.key.id}
+      - NEO4J_streams_sink_topic_cypher_datastream=MERGE (t:TrackedTask { id:event.key.id }) \
+          ON CREATE SET t.notes=event.value.notes \
+          ON MATCH SET t.notes=event.value.notes \
+          FOREACH (r in event.value.chargeCodes | \
+            MERGE (c:ChargeCode {id:r.id}) \
+            ON CREATE SET c.name=r.name \
+            ON MATCH SET c.name=r.name \
+            MERGE (t)-[:CHARGED]->(c))          
+    volumes:
+      - ./volume/plugins:/plugins
+      - ./volume/data:/data
+      - ./volume/import:/import
+      - ./volume/conf:/conf
+

@@ -11,7 +11,7 @@ server:
 
 kafka:
   bootstrapAddress: "http://192.168.1.111:9092"
-  topic: "data-stream"
+  topic: "datastream"
 
 spring:
   datasource:
