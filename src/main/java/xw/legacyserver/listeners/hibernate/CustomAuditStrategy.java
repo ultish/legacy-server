@@ -1,6 +1,7 @@
 package xw.legacyserver.listeners.hibernate;
 
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.hibernate.envers.configuration.AuditConfiguration;
 import org.hibernate.envers.configuration.GlobalConfiguration;
 import org.hibernate.envers.entities.mapper.PersistentCollectionChangeData;
@@ -10,11 +11,15 @@ import org.hibernate.envers.strategy.AuditStrategy;
 import org.hibernate.envers.tools.query.Parameters;
 import org.hibernate.envers.tools.query.QueryBuilder;
 
+import javax.transaction.Status;
+import javax.transaction.Synchronization;
 import java.io.Serializable;
 
 /**
  * define our own audit strategy that will capture all the Enver values
  * and stream them to Kafka instead!! :)
+ * <p>
+ * This is run
  */
 public class CustomAuditStrategy implements AuditStrategy {
 
@@ -27,7 +32,26 @@ public class CustomAuditStrategy implements AuditStrategy {
         Object data,
         Object revision
     ) {
+        final Transaction transaction = session.getTransaction();
 
+        transaction.registerSynchronization(new Synchronization() {
+            @Override
+            public void beforeCompletion() {
+                // nope
+                System.out.println("nope!");
+            }
+
+            @Override
+            public void afterCompletion(int status) {
+                // yea!
+                if (status == Status.STATUS_COMMITTED) {
+                    System.out.println("PEFORM after TX commit");
+
+                    // at this point we should generate an async job to
+                    // stream to kafka
+                }
+            }
+        });
         System.out.println("PEFORM!");
     }
 
