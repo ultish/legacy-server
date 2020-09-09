@@ -2,6 +2,7 @@ package xw.legacyserver.listeners.hibernate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hibernate.EmptyInterceptor;
 import org.hibernate.engine.spi.CollectionEntry;
 import org.hibernate.envers.RevisionType;
 import org.hibernate.event.spi.*;
@@ -24,7 +25,7 @@ import java.io.Serializable;
  * the entity/relationships in Envers that we can be inspired from
  */
 @Component
-public class CustomKafkaHibernateListener implements
+public class CustomKafkaHibernateListener extends EmptyInterceptor implements
     PostUpdateEventListener,
     PostInsertEventListener,
     PostDeleteEventListener,
