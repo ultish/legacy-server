@@ -43,12 +43,15 @@ public class UserController {
         return userDAO.save(user);
     }
 
-    @RequestMapping(method = RequestMethod.PUT)
+    @RequestMapping(method = RequestMethod.PUT, value = "/{id}")
     @ResponseBody
-    public User update(@RequestBody UserRest rest) {
+    public User update(
+        @RequestBody UserRest rest,
+        @PathVariable Integer id
+    ) {
         User existing = userDAO.findAll()
             .stream()
-            .filter(u -> rest.getId().equals(u.getId()))
+            .filter(u -> id.equals(u.getId()))
             .findFirst()
             .orElseThrow(() -> new RestClientException("Can't find User " + rest
                 .getId()));

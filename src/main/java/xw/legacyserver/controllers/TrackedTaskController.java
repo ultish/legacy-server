@@ -167,15 +167,21 @@ public class TrackedTaskController {
         }
 
         if (trackedTask.getTimeBlocks().isEmpty()) {
+            existing.getTimeBlocks().forEach(tb -> tb.setTrackedTask(null));
+
             existing.setTimeBlocks(Collections.emptyList());
         } else {
-            existing.setTimeBlocks(
-                timeBlockDAO.findAll()
-                    .stream()
-                    .filter(tb -> trackedTask.getTimeBlocks()
-                        .contains(tb.getId()))
-                    .collect(Collectors.toList())
-            );
+
+            List<TimeBlock> timeBlocks = timeBlockDAO.findAll()
+                .stream()
+                .filter(tb -> trackedTask.getTimeBlocks()
+                    .contains(tb.getId()))
+                .collect(Collectors.toList());
+
+            // update owning side of the relationship
+            timeBlocks.forEach(tb -> tb.setTrackedTask(existing));
+
+            existing.setTimeBlocks(timeBlocks);
         }
         if (trackedTask.getUser() != null) {
             existing.setUser(userDAO.findAll()

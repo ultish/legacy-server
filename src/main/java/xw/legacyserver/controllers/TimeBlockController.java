@@ -54,9 +54,12 @@ public class TimeBlockController {
         return timeBlockDAO.save(tb);
     }
 
-    @RequestMapping(method = RequestMethod.PUT)
+    @RequestMapping(method = RequestMethod.PUT, value = "/{id}")
     @ResponseBody
-    public TimeBlock update(@RequestBody TimeBlockRest rest) {
+    public TimeBlock update(
+        @RequestBody TimeBlockRest rest,
+        @PathVariable Integer id
+    ) {
         User user = userDAO.findAll()
             .stream()
             .filter(u -> rest.getUser().equals(u.getId()))
@@ -66,7 +69,7 @@ public class TimeBlockController {
 
         TimeBlock existing = timeBlockDAO.findAll()
             .stream()
-            .filter(tb -> rest.getId().equals(tb.getId()))
+            .filter(tb -> id.equals(tb.getId()))
             .findFirst()
             .orElseThrow(() -> new RestClientException("Can't find TimeBlock "
                 + rest
