@@ -1,7 +1,9 @@
 package xw.legacyserver.configs;
 
+import org.hibernate.AssertionFailure;
 import org.hibernate.cfg.EJB3NamingStrategy;
 import org.hibernate.internal.util.StringHelper;
+import org.springframework.util.StringUtils;
 
 import java.util.regex.Pattern;
 
@@ -38,14 +40,14 @@ public class CamelCaseNamingStrategy extends EJB3NamingStrategy {
         String joinedColumn, String joinedTable
     ) {
 
-        //        System.out.println("++++joinedColumn " + joinedColumn);
-        //
-        //        System.out.println("++++joinedTable " + joinedTable);
-        //
-        //        System.out.println("++++result " + super.joinKeyColumnName(
-        //            joinedColumn,
-        //            joinedTable
-        //        ));
+        System.out.println("++++joinedColumn " + joinedColumn);
+
+        System.out.println("++++joinedTable " + joinedTable);
+
+        System.out.println("++++result " + super.joinKeyColumnName(
+            joinedColumn,
+            joinedTable
+        ));
         return super.joinKeyColumnName(joinedColumn, joinedTable);
     }
 
@@ -57,19 +59,29 @@ public class CamelCaseNamingStrategy extends EJB3NamingStrategy {
         String referencedColumnName
     ) {
 
-        //        System.out.println("++++propertyName " + propertyName);
-        //        System.out.println("++++propertyEntityName " +
-        //        propertyEntityName);
-        //        System.out.println("++++propertyTableName " +
-        //        propertyTableName);
-        //        System.out.println("++++referencedColumnName " +
-        //        referencedColumnName);
+        System.out.println("++++propertyName " + propertyName);
+        System.out.println("++++propertyEntityName " +
+            propertyEntityName);
+        System.out.println("++++propertyTableName " +
+            propertyTableName);
+        System.out.println("++++referencedColumnName " +
+            referencedColumnName);
 
-        return super.foreignKeyColumnName(
-            propertyName,
-            propertyEntityName,
-            propertyTableName,
-            referencedColumnName
-        );
+        String header = propertyName != null ? StringHelper.unqualify(
+            propertyName) : propertyTableName;
+        if (header == null)
+            throw new AssertionFailure("NamingStrategy not properly filled");
+
+        String col = "\"" + columnName(header + StringUtils.capitalize(
+            referencedColumnName)) + "\"";
+        System.out.println("++++referencedColumnNameMod " +
+            col);
+        return col;
+        //        return super.foreignKeyColumnName(
+        //            propertyName,
+        //            propertyEntityName,
+        //            propertyTableName,
+        //            referencedColumnName
+        //        );
     }
 }

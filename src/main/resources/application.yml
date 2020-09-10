@@ -31,9 +31,10 @@ spring:
       org:
         hibernate:
           envers:
-            audit_strategy: "xw.legacyserver.listeners.hibernate.CustomAuditStrategy"
+            #            audit_strategy: "xw.legacyserver.listeners.hibernate.CustomAuditStrategy"
             modified_flag_suffix: "_mod"
-            global_with_modified_flag: true
+            # enable this to track property changes in the audit tables
+            global_with_modified_flag: false
             revision_type_field_name: "revtype"
             revision_field_name: "rev"
             audit_table_prefix: "aud_"

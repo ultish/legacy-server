@@ -6,7 +6,9 @@ import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import xw.legacyserver.entities.ChargeCode;
+import xw.legacyserver.entities.TimeBlock;
 import xw.legacyserver.entities.TrackedTask;
+import xw.legacyserver.entities.User;
 
 @SpringBootApplication
 public class LegacyServerApplication {
@@ -27,16 +29,20 @@ public class LegacyServerApplication {
 
         //make sure you set the dialect correctly for your database (oracle
         // for example below)
+        //        config.setProperty(
+        //            "hibernate.dialect",
+        //            "org.hibernate.dialect.PostgreSQL9Dialect"
+        //        );
         config.setProperty(
             "hibernate.dialect",
-            "org.hibernate.dialect.PostgreSQL9Dialect"
+            "org.hibernate.dialect.PostgreSQL82Dialect"
         );
         config.setProperty("org.hibernate.envers.audit_table_prefix", "aud_");
         config.setProperty("org.hibernate.envers.audit_table_suffix", "");
-        config.setProperty(
-            "org.hibernate.envers.global_with_modified_flag",
-            "true"
-        );
+        //        config.setProperty(
+        //            "org.hibernate.envers.global_with_modified_flag",
+        //            "true"
+        //        );
         config.setProperty(
             "org.hibernate.envers.revision_type_field_name",
             "revtype"
@@ -49,6 +55,8 @@ public class LegacyServerApplication {
         //add all of your entities
         config.addAnnotatedClass(ChargeCode.class);
         config.addAnnotatedClass(TrackedTask.class);
+        config.addAnnotatedClass(User.class);
+        config.addAnnotatedClass(TimeBlock.class);
 
         SchemaExport export = new EnversSchemaGenerator(config).export()
             .setDelimiter(";");

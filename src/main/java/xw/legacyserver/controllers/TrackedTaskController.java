@@ -12,10 +12,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestClientException;
 import xw.legacyserver.dao.ChargeCodeDAO;
+import xw.legacyserver.dao.TimeBlockDAO;
 import xw.legacyserver.dao.TrackedTaskDAO;
-import xw.legacyserver.entities.ChargeCode;
-import xw.legacyserver.entities.CustomRevisionEntity;
-import xw.legacyserver.entities.TrackedTask;
+import xw.legacyserver.dao.UserDAO;
+import xw.legacyserver.entities.*;
 import xw.legacyserver.rest.TrackedTaskRest;
 
 import javax.persistence.EntityManager;
@@ -34,6 +34,11 @@ public class TrackedTaskController {
     TrackedTaskDAO trackedTaskDAO;
     @Autowired
     ChargeCodeDAO chargeCodeDAO;
+    @Autowired
+    UserDAO userDAO;
+    @Autowired
+    TimeBlockDAO timeBlockDAO;
+
     @PersistenceContext
     EntityManager em;
 
@@ -113,8 +118,26 @@ public class TrackedTaskController {
                 .filter(c -> trackedTask.getChargeCodes().contains(c.getId()))
                 .collect(Collectors.toList());
         }
+        List<TimeBlock> timeBlocks = new ArrayList<>();
+        if (!trackedTask.getTimeBlocks().isEmpty()) {
+            timeBlocks = timeBlockDAO.findAll()
+                .stream()
+                .filter(tb -> trackedTask.getTimeBlocks().contains(tb.getId()))
+                .collect(Collectors.toList());
+        }
+
+        User user = null;
+        if (trackedTask.getUser() != null) {
+            user = userDAO.findAll()
+                .stream()
+                .filter(u -> trackedTask.getUser().equals(u.getId()))
+                .findFirst()
+                .orElse(null);
+        }
+
         TrackedTask tt = new TrackedTask(null, trackedTask.getNotes(), cc,
-            new Date(), new Date(), trackedTask.getOvertimeEnabled()
+            timeBlocks,
+            new Date(), new Date(), trackedTask.getOvertimeEnabled(), user
         );
         return trackedTaskDAO.save(tt);
     }
@@ -141,6 +164,27 @@ public class TrackedTaskController {
                     .filter(cc -> trackedTask.getChargeCodes()
                         .contains(cc.getId()))
                     .collect(Collectors.toList()));
+        }
+
+        if (trackedTask.getTimeBlocks().isEmpty()) {
+            existing.setTimeBlocks(Collections.emptyList());
+        } else {
+            existing.setTimeBlocks(
+                timeBlockDAO.findAll()
+                    .stream()
+                    .filter(tb -> trackedTask.getTimeBlocks()
+                        .contains(tb.getId()))
+                    .collect(Collectors.toList())
+            );
+        }
+        if (trackedTask.getUser() != null) {
+            existing.setUser(userDAO.findAll()
+                .stream()
+                .filter(u -> trackedTask.getUser().equals(u.getId()))
+                .findFirst()
+                .orElse(null));
+        } else {
+            existing.setUser(null);
         }
 
         existing.setNotes(trackedTask.getNotes());

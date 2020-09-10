@@ -1,10 +1,7 @@
 package xw.legacyserver.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.envers.Audited;
@@ -14,7 +11,8 @@ import java.util.Date;
 import java.util.List;
 
 @Data
-@EqualsAndHashCode(callSuper = true, exclude = "chargeCodes")
+@EqualsAndHashCode(callSuper = true, exclude = {"chargeCodes", "user",
+    "timeBlocks"})
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -34,6 +32,7 @@ public class TrackedTask extends IEntity {
     private Integer id;
     private String notes;
 
+    @ToString.Exclude
     @JsonIgnoreProperties({"trackedTasks"})
     @ManyToMany
     @JoinTable(name = "taskcodes", joinColumns = @JoinColumn(name =
@@ -42,10 +41,20 @@ public class TrackedTask extends IEntity {
     )
     private List<ChargeCode> chargeCodes;
     //    @OneToMany(fetch = FetchType.LAZY, mappedBy = "trackedtaskId")
-    //    private List<TimeBlock> timeBlocks;
+
+    @ToString.Exclude
+    @JsonIgnoreProperties({"trackedTask", "user"})
+    @OneToMany(mappedBy = "trackedTask")
+    private List<TimeBlock> timeBlocks;
+
     private Date createdAt;
     private Date updatedAt;
     private Boolean overtimeEnabled;
+
+    @ToString.Exclude
+    @JsonIgnoreProperties({"trackedTasks"})
+    @ManyToOne
+    private User user;
 
     @Override
     public String getKey() {
