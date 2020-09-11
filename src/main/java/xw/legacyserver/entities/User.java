@@ -1,6 +1,8 @@
 package xw.legacyserver.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.envers.Audited;
@@ -33,8 +35,11 @@ public class User extends IEntity {
     private String password;
 
     @ToString.Exclude
-    @JsonIgnoreProperties({"user"})
+    //    @JsonIgnoreProperties({"user"})
     @OneToMany(mappedBy = "user")
+    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "id")
+    @JsonIdentityReference(alwaysAsId = true)
     private List<TrackedTask> trackedTasks;
 
     @Override

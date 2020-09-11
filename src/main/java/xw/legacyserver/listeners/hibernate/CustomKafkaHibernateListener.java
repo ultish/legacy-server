@@ -67,8 +67,8 @@ public class CustomKafkaHibernateListener extends EmptyInterceptor implements
 
     @Override
     public void onPostUpdate(PostUpdateEvent event) {
-        System.out.println("test" + event);
-        print(RevisionType.MOD, event.getEntity());
+        //        System.out.println("test" + event);
+        //        print(RevisionType.MOD, event.getEntity());
         streamToKafka(event, RevisionType.MOD, event.getEntity());
     }
 
@@ -92,7 +92,7 @@ public class CustomKafkaHibernateListener extends EmptyInterceptor implements
 
     @Override
     public void onPostRecreateCollection(PostCollectionRecreateEvent event) {
-        System.out.println("post recreate collection");
+        //        System.out.println("post recreate collection");
         String ownerEntityName = event.getAffectedOwnerEntityName();
 
         CollectionEntry collectionEntry = event.getSession()
@@ -115,22 +115,22 @@ public class CustomKafkaHibernateListener extends EmptyInterceptor implements
 
             Object value = event.getCollection().getValue();
 
-            System.out.println("\tName: " + ownerEntityName);
-            System.out.println("\tID: " + affectedOwnerIdOrNull);
-            System.out.println("\tInverse: " +
-                collectionEntry.getLoadedPersister().isInverse());
-            print(RevisionType.MOD, affectedOwnerOrNull);
+            //            System.out.println("\tName: " + ownerEntityName);
+            //            System.out.println("\tID: " + affectedOwnerIdOrNull);
+            //            System.out.println("\tInverse: " +
+            //                collectionEntry.getLoadedPersister().isInverse());
+            //            print(RevisionType.MOD, affectedOwnerOrNull);
 
             streamToKafka(event, RevisionType.MOD, affectedOwnerOrNull);
         } else {
-            System.out.println("skip " + ownerEntityName);
+            //            System.out.println("skip " + ownerEntityName);
         }
-        System.out.println("/post recreate collection----------\n");
+        //        System.out.println("/post recreate collection----------\n");
     }
 
     @Override
     public void onPostRemoveCollection(PostCollectionRemoveEvent event) {
-        System.out.println("post remove collection");
+        //        System.out.println("post remove collection");
 
         String ownerEntityName = event.getAffectedOwnerEntityName();
         Serializable affectedOwnerIdOrNull =
@@ -147,7 +147,7 @@ public class CustomKafkaHibernateListener extends EmptyInterceptor implements
 
     @Override
     public void onPostUpdateCollection(PostCollectionUpdateEvent event) {
-        System.out.println("post update collection");
+        //        System.out.println("post update collection");
 
         String ownerEntityName = event.getAffectedOwnerEntityName();
         Serializable affectedOwnerIdOrNull =
@@ -164,17 +164,17 @@ public class CustomKafkaHibernateListener extends EmptyInterceptor implements
 
     @Override
     public void onPreRemoveCollection(PreCollectionRemoveEvent event) {
-        System.out.println("pre remove collection");
+        //        System.out.println("pre remove collection");
     }
 
     @Override
     public void onPreUpdateCollection(PreCollectionUpdateEvent event) {
-        System.out.println("pre update collection");
+        //        System.out.println("pre update collection");
     }
 
     @Override
     public void onPreRecreateCollection(PreCollectionRecreateEvent event) {
-        System.out.println("pre recreate collection");
+        //        System.out.println("pre recreate collection");
     }
 
     private void print(

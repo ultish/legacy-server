@@ -41,8 +41,8 @@ public class CustomRevisionListener implements EntityTrackingRevisionListener {
 
     @Override
     public void newRevision(Object revisionEntity) {
-        System.out.println("----New Revision----");
-        print(revisionEntity);
-        System.out.println("/----New Revision----\n");
+        //        System.out.println("----New Revision----");
+        //        print(revisionEntity);
+        //        System.out.println("/----New Revision----\n");
     }
 }

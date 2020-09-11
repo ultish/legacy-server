@@ -1,6 +1,8 @@
 package xw.legacyserver.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
@@ -33,18 +35,23 @@ public class TrackedTask extends IEntity {
     private String notes;
 
     @ToString.Exclude
-    @JsonIgnoreProperties({"trackedTasks"})
+    //    @JsonIgnoreProperties({"trackedTasks"})
     @ManyToMany
     @JoinTable(name = "taskcodes", joinColumns = @JoinColumn(name =
         "\"trackedtaskId\""),
         inverseJoinColumns = @JoinColumn(name = "\"chargecodeId\"")
     )
+    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "id")
+    @JsonIdentityReference(alwaysAsId = true)
     private List<ChargeCode> chargeCodes;
-    //    @OneToMany(fetch = FetchType.LAZY, mappedBy = "trackedtaskId")
 
     @ToString.Exclude
-    @JsonIgnoreProperties({"trackedTask", "user"})
+    //    @JsonIgnoreProperties({"trackedTask", "user"})
     @OneToMany(mappedBy = "trackedTask")
+    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "id")
+    @JsonIdentityReference(alwaysAsId = true)
     private List<TimeBlock> timeBlocks;
 
     private Date createdAt;
@@ -52,8 +59,11 @@ public class TrackedTask extends IEntity {
     private Boolean overtimeEnabled;
 
     @ToString.Exclude
-    @JsonIgnoreProperties({"trackedTasks"})
+    //    @JsonIgnoreProperties({"trackedTasks"})
     @ManyToOne
+    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "id")
+    @JsonIdentityReference(alwaysAsId = true)
     private User user;
 
     @Override

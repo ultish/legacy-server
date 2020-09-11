@@ -12,7 +12,7 @@ public class KafkaInterceptor extends EmptyInterceptor {
         CallbackException {
         super.onCollectionRecreate(collection, key);
 
-        System.out.println("collection recreate");
+        //        System.out.println("collection recreate");
     }
 
     @Override
@@ -20,7 +20,7 @@ public class KafkaInterceptor extends EmptyInterceptor {
         CallbackException {
         super.onCollectionUpdate(collection, key);
 
-        System.out.println("collection update");
+        //        System.out.println("collection update");
 
     }
 }

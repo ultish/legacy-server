@@ -16,7 +16,8 @@ public class CustomEnversPostInsertEventListener
         final String entityName = event.getPersister().getEntityName();
 
         if (getAuditConfiguration().getEntCfg().isVersioned(entityName)) {
-            System.out.println("Versioned entity " + event.getEntity());
+            //            System.out.println("Versioned entity " + event
+            //            .getEntity());
         }
     }
 }

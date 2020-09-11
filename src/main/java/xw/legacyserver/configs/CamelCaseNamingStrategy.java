@@ -40,14 +40,14 @@ public class CamelCaseNamingStrategy extends EJB3NamingStrategy {
         String joinedColumn, String joinedTable
     ) {
 
-        System.out.println("++++joinedColumn " + joinedColumn);
-
-        System.out.println("++++joinedTable " + joinedTable);
-
-        System.out.println("++++result " + super.joinKeyColumnName(
-            joinedColumn,
-            joinedTable
-        ));
+        //        System.out.println("++++joinedColumn " + joinedColumn);
+        //
+        //        System.out.println("++++joinedTable " + joinedTable);
+        //
+        //        System.out.println("++++result " + super.joinKeyColumnName(
+        //            joinedColumn,
+        //            joinedTable
+        ////        ));
         return super.joinKeyColumnName(joinedColumn, joinedTable);
     }
 
@@ -58,14 +58,14 @@ public class CamelCaseNamingStrategy extends EJB3NamingStrategy {
         String propertyTableName,
         String referencedColumnName
     ) {
-
-        System.out.println("++++propertyName " + propertyName);
-        System.out.println("++++propertyEntityName " +
-            propertyEntityName);
-        System.out.println("++++propertyTableName " +
-            propertyTableName);
-        System.out.println("++++referencedColumnName " +
-            referencedColumnName);
+        //
+        //        System.out.println("++++propertyName " + propertyName);
+        //        System.out.println("++++propertyEntityName " +
+        //            propertyEntityName);
+        //        System.out.println("++++propertyTableName " +
+        //            propertyTableName);
+        //        System.out.println("++++referencedColumnName " +
+        //            referencedColumnName);
 
         String header = propertyName != null ? StringHelper.unqualify(
             propertyName) : propertyTableName;
@@ -74,8 +74,8 @@ public class CamelCaseNamingStrategy extends EJB3NamingStrategy {
 
         String col = "\"" + columnName(header + StringUtils.capitalize(
             referencedColumnName)) + "\"";
-        System.out.println("++++referencedColumnNameMod " +
-            col);
+        //        System.out.println("++++referencedColumnNameMod " +
+        //            col);
         return col;
         //        return super.foreignKeyColumnName(
         //            propertyName,
