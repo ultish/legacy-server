@@ -1,7 +1,5 @@
 package xw.legacyserver.listeners.hibernate;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.envers.RevisionType;
@@ -10,16 +8,21 @@ import org.hibernate.envers.configuration.GlobalConfiguration;
 import org.hibernate.envers.entities.mapper.PersistentCollectionChangeData;
 import org.hibernate.envers.entities.mapper.relation.MiddleComponentData;
 import org.hibernate.envers.entities.mapper.relation.MiddleIdData;
-import org.hibernate.envers.strategy.AuditStrategy;
+import org.hibernate.envers.strategy.DefaultAuditStrategy;
+import org.hibernate.envers.synchronization.SessionCacheCleaner;
 import org.hibernate.envers.tools.query.Parameters;
 import org.hibernate.envers.tools.query.QueryBuilder;
 import xw.legacyserver.entities.CustomRevisionEntity;
+import xw.legacyserver.kafka.KafkaMetadata;
+import xw.legacyserver.kafka.KafkaStreamManager;
+import xw.legacyserver.kafka.KafkaStreamProcess;
 
-import javax.transaction.Status;
-import javax.transaction.Synchronization;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * define our own audit strategy that will capture all the Enver values
@@ -28,7 +31,22 @@ import java.util.Map;
  * This is run
  */
 public class CustomAuditStrategy
-    implements AuditStrategy /*extends DefaultAuditStrategy*/ {
+    extends DefaultAuditStrategy {
+
+    private final SessionCacheCleaner sessionCacheCleaner;
+    private KafkaStreamManager kafkaStreamManager;
+
+    public CustomAuditStrategy() {
+        sessionCacheCleaner = new SessionCacheCleaner();
+    }
+
+    private KafkaStreamManager getKafkaStreamManager() {
+        if (this.kafkaStreamManager == null) {
+            kafkaStreamManager =
+                SpringContext.getBean(KafkaStreamManager.class);
+        }
+        return kafkaStreamManager;
+    }
 
     @Override
     public void perform(
@@ -43,56 +61,81 @@ public class CustomAuditStrategy
         //        super.perform(session, entityName, auditCfg, id, data,
         //        revision);
 
+        KafkaStreamManager kafkaStreamManager = getKafkaStreamManager();
         final Transaction transaction = session.getTransaction();
+        KafkaStreamProcess kafkaStreamProcess = kafkaStreamManager.get(
+            transaction);
 
-        transaction.registerSynchronization(new Synchronization() {
-            @Override
-            public void beforeCompletion() {
-                // nope
-                System.out.println("nope!");
-            }
+        Map<String, Object> actualData = (Map<String, Object>) data;
+        KafkaMetadata meta = new KafkaMetadata(
+            "ENTITY",
+            (RevisionType) actualData.get("revtype"),
+            id.toString(),
+            entityName,
+            ((CustomRevisionEntity) revision).getRev()
+        );
+        actualData.remove("revtype");
+        actualData.remove("originalId");
 
-            @Override
-            public void afterCompletion(int status) {
-                // yea!
-                if (status == Status.STATUS_COMMITTED) {
-                    AuditConfiguration auditCfg2 = auditCfg;
+        kafkaStreamProcess.addWork(meta, actualData);
 
-                    Map<String, Object> actualData = (Map<String, Object>) data;
+        // TODO?
+        //        sessionCacheCleaner.scheduleAuditDataRemoval(session, data);
 
-                    Map<String, Object> result = new HashMap<>();
-                    Map<String, Object> meta = new HashMap<>();
-                    meta.put("type", "ENTITY");
-                    meta.put("revType", actualData.get("revtype"));
-                    meta.put("id", id);
-                    meta.put("entity", entityName);
-                    meta.put("rev", ((CustomRevisionEntity) revision).getRev());
-
-                    actualData.remove("revtype");
-                    actualData.remove("originalId");
-
-                    result.put("meta", meta);
-                    result.put("data", actualData);
-
-                    ObjectMapper mapper = new ObjectMapper();
-
-                    try {
-                        String send = mapper.writerWithDefaultPrettyPrinter()
-                            .writeValueAsString(result);
-
-                        System.out.println("\t>> Auditing: " + entityName +
-                            " [" + id + "]");
-                        System.out.println("\t>> toSend: " + send);
-                        System.out.println();
-                    } catch (JsonProcessingException e) {
-                        e.printStackTrace();
-                    }
-
-                    // at this point we should generate an async job to
-                    // stream to kafka
-                }
-            }
-        });
+        //
+        //        transaction.registerSynchronization(new Synchronization() {
+        //            @Override
+        //            public void beforeCompletion() {
+        //                // nope
+        //                System.out.println("nope!");
+        //            }
+        //
+        //            @Override
+        //            public void afterCompletion(int status) {
+        //                // yea!
+        //                if (status == Status.STATUS_COMMITTED) {
+        //                    AuditConfiguration auditCfg2 = auditCfg;
+        //
+        //                    Map<String, Object> actualData = (Map<String,
+        //                    Object>) data;
+        //
+        //                    Map<String, Object> result = new HashMap<>();
+        //                    Map<String, Object> meta = new HashMap<>();
+        //                    meta.put("type", "ENTITY");
+        //                    meta.put("revType", actualData.get("revtype"));
+        //                    meta.put("id", id);
+        //                    meta.put("entity", entityName);
+        //                    meta.put("rev", ((CustomRevisionEntity)
+        //                    revision).getRev());
+        //
+        //                    actualData.remove("revtype");
+        //                    actualData.remove("originalId");
+        //
+        //                    result.put("meta", meta);
+        //                    result.put("data", actualData);
+        //
+        //                    ObjectMapper mapper = new ObjectMapper();
+        //
+        //                    try {
+        //                        String send = mapper
+        //                        .writerWithDefaultPrettyPrinter()
+        //                            .writeValueAsString(result);
+        //
+        //                        System.out.println("\t>> Auditing: " +
+        //                        entityName +
+        //                            " [" + id + "]");
+        //                        System.out.println("\t>> toSend: " + send);
+        //                        System.out.println();
+        //                    } catch (JsonProcessingException e) {
+        //                        e.printStackTrace();
+        //                    }
+        //
+        //                    // at this point we should generate an async
+        //                    job to
+        //                    // stream to kafka
+        //                }
+        //            }
+        //        });
 
     }
 
@@ -115,69 +158,111 @@ public class CustomAuditStrategy
         //        );
 
         System.out.println("PEFORM Collection!");
+
+        KafkaStreamManager kafkaStreamManager = getKafkaStreamManager();
         final Transaction transaction = session.getTransaction();
+        KafkaStreamProcess kafkaStreamProcess = kafkaStreamManager.get(
+            transaction);
 
-        transaction.registerSynchronization(new Synchronization() {
-            @Override
-            public void beforeCompletion() {
-                // nope
-                System.out.println("nope!");
-            }
+        String actualEntityName =
+            persistentCollectionChangeData.getEntityName();
+        Map<String, Object> relData =
+            persistentCollectionChangeData.getData();
+        RevisionType revType = (RevisionType) relData.get(
+            "revtype");
+        Map<String, Object> originalId =
+            (Map<String, Object>) relData.get(
+                "originalId");
 
-            @Override
-            public void afterCompletion(int status) {
-                // yea!
-                if (status == Status.STATUS_COMMITTED) {
-                    AuditConfiguration auditCfg2 = auditCfg;
-
-                    String entityName =
-                        persistentCollectionChangeData.getEntityName();
-
-                    Map<String, Object> relData =
-                        persistentCollectionChangeData.getData();
-                    RevisionType revType = (RevisionType) relData.get(
-                        "revtype");
-
-                    Map<String, Object> originalId =
-                        (Map<String, Object>) relData.get(
-                            "originalId");
-
-                    Map<String, Object> data = new HashMap<>();
-                    originalId.entrySet().forEach(entry -> {
-                        if (!entry.getKey().equals("rev")) {
-                            data.put(entry.getKey(), entry.getValue());
-                        }
-                    });
-
-                    Map<String, Object> result = new HashMap<>();
-                    Map<String, Object> meta = new HashMap<>();
-                    meta.put("type", "REL");
-                    meta.put("revType", revType);
-                    meta.put("entity", entityName);
-                    meta.put("rev", ((CustomRevisionEntity) revision).getRev());
-
-                    result.put("meta", meta);
-                    result.put("data", data);
-
-                    ObjectMapper mapper = new ObjectMapper();
-                    try {
-                        String send = mapper.writerWithDefaultPrettyPrinter()
-                            .writeValueAsString(result);
-
-                        System.out.println("\t>> Auditing Collection [" + revType +
-                            "]: " + entityName);
-                        System.out.println("\t>> toSend: " + send);
-                        System.out.println();
-                    } catch (JsonProcessingException e) {
-                        e.printStackTrace();
-                    }
-
-                    //                    revEntity.get
-                    // at this point we should generate an async job to
-                    // stream to kafka
-                }
+        List<java.lang.String> keys = new ArrayList<>();
+        Map<String, Object> data = new HashMap<>();
+        originalId.entrySet().forEach(entry -> {
+            if (!entry.getKey().equals("rev")) {
+                data.put(entry.getKey(), entry.getValue());
+                keys.add(entry.getKey() + ":" + entry.getValue().toString());
             }
         });
+
+        KafkaMetadata meta = new KafkaMetadata("REL", revType,
+            keys.stream().collect(Collectors.joining(",")),
+            actualEntityName, ((CustomRevisionEntity) revision).getRev()
+        );
+
+        kafkaStreamProcess.addWork(meta, data);
+
+        // TODO?
+        //        sessionCacheCleaner.scheduleAuditDataRemoval(
+        //            session,
+        //            persistentCollectionChangeData.getData()
+        //        );
+
+        //        transaction.registerSynchronization(new Synchronization() {
+        //            @Override
+        //            public void beforeCompletion() {
+        //                // nope
+        //                System.out.println("nope!");
+        //            }
+        //
+        //            @Override
+        //            public void afterCompletion(int status) {
+        //                // yea!
+        //                if (status == Status.STATUS_COMMITTED) {
+        //                    AuditConfiguration auditCfg2 = auditCfg;
+        //
+        //                    String entityName =
+        //                        persistentCollectionChangeData
+        //                        .getEntityName();
+        //
+        //                    Map<String, Object> relData =
+        //                        persistentCollectionChangeData.getData();
+        //                    RevisionType revType = (RevisionType) relData.get(
+        //                        "revtype");
+        //
+        //                    Map<String, Object> originalId =
+        //                        (Map<String, Object>) relData.get(
+        //                            "originalId");
+        //
+        //                    Map<String, Object> data = new HashMap<>();
+        //                    originalId.entrySet().forEach(entry -> {
+        //                        if (!entry.getKey().equals("rev")) {
+        //                            data.put(entry.getKey(), entry.getValue
+        //                            ());
+        //                        }
+        //                    });
+        //
+        //                    Map<String, Object> result = new HashMap<>();
+        //                    Map<String, Object> meta = new HashMap<>();
+        //                    meta.put("type", "REL");
+        //                    meta.put("revType", revType);
+        //                    meta.put("entity", entityName);
+        //                    meta.put("rev", ((CustomRevisionEntity)
+        //                    revision).getRev());
+        //
+        //                    result.put("meta", meta);
+        //                    result.put("data", data);
+        //
+        //                    ObjectMapper mapper = new ObjectMapper();
+        //                    try {
+        //                        String send = mapper
+        //                        .writerWithDefaultPrettyPrinter()
+        //                            .writeValueAsString(result);
+        //
+        //                        System.out.println("\t>> Auditing
+        //                        Collection [" + revType +
+        //                            "]: " + entityName);
+        //                        System.out.println("\t>> toSend: " + send);
+        //                        System.out.println();
+        //                    } catch (JsonProcessingException e) {
+        //                        e.printStackTrace();
+        //                    }
+        //
+        //                    //                    revEntity.get
+        //                    // at this point we should generate an async
+        //                    job to
+        //                    // stream to kafka
+        //                }
+        //            }
+        //        });
     }
 
     @Override
@@ -196,20 +281,20 @@ public class CustomAuditStrategy
         boolean inclusive
     ) {
 
-        //        super.addEntityAtRevisionRestriction(
-        //            globalCfg,
-        //            rootQueryBuilder,
-        //            parameters,
-        //            revisionProperty,
-        //            revisionEndProperty,
-        //            addAlias,
-        //            idData,
-        //            revisionPropertyPath,
-        //            originalIdPropertyName,
-        //            alias1,
-        //            alias2,
-        //            inclusive
-        //        );
+        super.addEntityAtRevisionRestriction(
+            globalCfg,
+            rootQueryBuilder,
+            parameters,
+            revisionProperty,
+            revisionEndProperty,
+            addAlias,
+            idData,
+            revisionPropertyPath,
+            originalIdPropertyName,
+            alias1,
+            alias2,
+            inclusive
+        );
 
         System.out.println("add sotmghing!");
     }
@@ -230,21 +315,21 @@ public class CustomAuditStrategy
         boolean inclusive,
         MiddleComponentData... componentDatas
     ) {
-        //        super.addAssociationAtRevisionRestriction(
-        //            rootQueryBuilder,
-        //            parameters,
-        //            revisionProperty,
-        //            revisionEndProperty,
-        //            addAlias,
-        //            referencingIdData,
-        //            versionsMiddleEntityName,
-        //            eeOriginalIdPropertyPath,
-        //            revisionPropertyPath,
-        //            originalIdPropertyName,
-        //            alias1,
-        //            inclusive,
-        //            componentDatas
-        //        );
+        super.addAssociationAtRevisionRestriction(
+            rootQueryBuilder,
+            parameters,
+            revisionProperty,
+            revisionEndProperty,
+            addAlias,
+            referencingIdData,
+            versionsMiddleEntityName,
+            eeOriginalIdPropertyPath,
+            revisionPropertyPath,
+            originalIdPropertyName,
+            alias1,
+            inclusive,
+            componentDatas
+        );
 
         System.out.println("add some other thing!");
     }

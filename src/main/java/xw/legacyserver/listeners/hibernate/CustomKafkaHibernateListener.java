@@ -10,9 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
-import xw.legacyserver.entities.IEntity;
-import xw.legacyserver.kafka.KafkaData;
-import xw.legacyserver.kafka.KafkaKey;
+import xw.legacyserver.kafka.KafkaMetadata;
 import xw.legacyserver.kafka.KafkaStreamManager;
 
 import java.io.Serializable;
@@ -37,7 +35,7 @@ public class CustomKafkaHibernateListener extends EmptyInterceptor implements
     PostCollectionRecreateEventListener {
 
     @Autowired
-    private KafkaTemplate<KafkaKey, KafkaData> kafkaTemplate;
+    private KafkaTemplate<KafkaMetadata, Object> kafkaTemplate;
 
     @Autowired
     private KafkaStreamManager kafkaStreamManager;
@@ -49,20 +47,27 @@ public class CustomKafkaHibernateListener extends EmptyInterceptor implements
         AbstractEvent event, RevisionType revisionType,
         Object o
     ) {
-        if (o != null && o instanceof IEntity) {
 
-            // we should wrap this message with metadata eg MOD, CREATE,
-            // DELETE and any other
-            //                sendMessage(revisionType, (IEntity) o);
-
-            IEntity ie = (IEntity) o;
-            kafkaStreamManager.get(event.getSession())
-                .addWork(KafkaKey.of(
-                    revisionType,
-                    ie.getClass().getCanonicalName(),
-                    ie.getKey()
-                ), ie);
-        }
+        // TODO disabled in favor of CustomAuditStrategy
+        //        if (o != null && o instanceof IEntity) {
+        //
+        //            // we should wrap this message with metadata eg MOD,
+        //            CREATE,
+        //            // DELETE and any other
+        //            //                sendMessage(revisionType, (IEntity) o);
+        //
+        //            IEntity ie = (IEntity) o;
+        //            KafkaMetadata metadata = new KafkaMetadata(
+        //                "",
+        //                revisionType,
+        //                ie.getKey(),
+        //                ie.getClass().getName(),
+        //                0
+        //            );
+        //
+        //            kafkaStreamManager.get(event.getSession())
+        //                .addWork(metadata, ie);
+        //        }
     }
 
     @Override

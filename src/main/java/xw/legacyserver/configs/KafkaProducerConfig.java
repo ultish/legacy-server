@@ -8,8 +8,7 @@ import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.support.serializer.JsonSerializer;
-import xw.legacyserver.kafka.KafkaData;
-import xw.legacyserver.kafka.KafkaKey;
+import xw.legacyserver.kafka.KafkaMetadata;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +19,7 @@ public class KafkaProducerConfig {
     private String bootstrapAddress;
 
     @Bean
-    public ProducerFactory<KafkaKey, KafkaData> producerFactory() {
+    public ProducerFactory<KafkaMetadata, Object> producerFactory() {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(
             ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
@@ -39,7 +38,7 @@ public class KafkaProducerConfig {
 
     @Bean
     // can create multiple beans for different object types
-    public KafkaTemplate<KafkaKey, KafkaData> kafkaTemplate() {
+    public KafkaTemplate<KafkaMetadata, Object> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
 }
