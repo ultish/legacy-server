@@ -12,16 +12,23 @@ import org.hibernate.envers.strategy.DefaultAuditStrategy;
 import org.hibernate.envers.synchronization.SessionCacheCleaner;
 import org.hibernate.envers.tools.query.Parameters;
 import org.hibernate.envers.tools.query.QueryBuilder;
+import org.reflections.Reflections;
+import org.reflections.scanners.FieldAnnotationsScanner;
+import org.reflections.scanners.SubTypesScanner;
+import org.reflections.scanners.TypeAnnotationsScanner;
+import org.reflections.util.ClasspathHelper;
+import org.reflections.util.ConfigurationBuilder;
 import xw.legacyserver.entities.CustomRevisionEntity;
 import xw.legacyserver.kafka.KafkaMetadata;
 import xw.legacyserver.kafka.KafkaStreamManager;
 import xw.legacyserver.kafka.KafkaStreamProcess;
 
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.lang.reflect.Field;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -35,9 +42,19 @@ public class CustomAuditStrategy
 
     private final SessionCacheCleaner sessionCacheCleaner;
     private KafkaStreamManager kafkaStreamManager;
+    private Reflections reflections;
 
     public CustomAuditStrategy() {
         sessionCacheCleaner = new SessionCacheCleaner();
+        reflections = new Reflections(new ConfigurationBuilder()
+            .setUrls(ClasspathHelper.forPackage("xw.legacyserver.entities"))
+            .setScanners(
+                new TypeAnnotationsScanner(),
+                new FieldAnnotationsScanner(),
+                new SubTypesScanner()
+            )
+            .useParallelExecutor(4));
+
     }
 
     private KafkaStreamManager getKafkaStreamManager() {
@@ -57,6 +74,44 @@ public class CustomAuditStrategy
         Object data,
         Object revision
     ) {
+
+        try {
+            Class entityClass = Class.forName(entityName);
+
+            Set<Class<?>> subTypesOf =
+                reflections.getSubTypesOf(entityClass);
+
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        Set<Field> fieldsManyToMany = reflections.getFieldsAnnotatedWith(
+            ManyToMany.class);
+
+        Set<Field> fieldsOneToMany = reflections.getFieldsAnnotatedWith(
+            OneToMany.class);
+
+        Set<Field> fieldsManyToOne = reflections.getFieldsAnnotatedWith(
+            ManyToOne.class);
+
+        List<String> collect = fieldsManyToMany.stream().filter(field ->
+            field.getDeclaringClass().getName().equals(entityName)
+        ).map(field -> {
+            String name = field.getName();
+            ManyToMany annotation = field.getAnnotation(ManyToMany.class);
+            String mappedBy = annotation.mappedBy();
+
+            return name;
+        }).collect(Collectors.toList());
+
+        // TODO either here or earlier in listener chain, use the entityName
+        //  to pull out the class and look for the annotations to see what it
+        //  has. We don't define annotations here for the entity classes so
+        //  we may not have what we want. But basically I want to generate a
+        //  schema definition based on @Basic attributes vs @OneToOne,
+        //  @OneToMany, or @ManyToMany. We only need to know about
+        //  relationships and the entityName they are going to.
+        // Lets see what we get from lombok...
 
         //        super.perform(session, entityName, auditCfg, id, data,
         //        revision);

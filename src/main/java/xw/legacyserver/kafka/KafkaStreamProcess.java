@@ -1,6 +1,7 @@
 package xw.legacyserver.kafka;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.apache.kafka.common.PartitionInfo;
 import org.hibernate.action.spi.AfterTransactionCompletionProcess;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -8,6 +9,7 @@ import org.springframework.kafka.support.SendResult;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
+import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -59,6 +61,9 @@ public class KafkaStreamProcess implements AfterTransactionCompletionProcess {
 
     private void sendMessage(KafkaData data) throws
         JsonProcessingException {
+
+        List<PartitionInfo> partitionInfos =
+            kafkaTemplate.partitionsFor(this.kafkaTopic);
 
         ListenableFuture<SendResult<KafkaMetadata, Object>> future =
             kafkaTemplate.send(

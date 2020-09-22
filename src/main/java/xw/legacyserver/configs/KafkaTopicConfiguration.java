@@ -30,6 +30,7 @@ public class KafkaTopicConfiguration {
 
     @Bean
     public NewTopic topic1() {
+        // TODO only 1 partition at the moment. No parallelism
         return new NewTopic(kafkaTopic, 1, (short) 1);
     }
 
