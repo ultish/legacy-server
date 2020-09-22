@@ -43,6 +43,7 @@ public class CustomAuditStrategy
     private final SessionCacheCleaner sessionCacheCleaner;
     private KafkaStreamManager kafkaStreamManager;
     private Reflections reflections;
+    private Map<String, SchemaMetadata> schemaMetadataMap;
 
     public CustomAuditStrategy() {
         sessionCacheCleaner = new SessionCacheCleaner();
@@ -55,6 +56,7 @@ public class CustomAuditStrategy
             )
             .useParallelExecutor(4));
 
+        schemaMetadataMap = new HashMap<>();
     }
 
     private KafkaStreamManager getKafkaStreamManager() {
@@ -387,5 +389,9 @@ public class CustomAuditStrategy
         );
 
         System.out.println("add some other thing!");
+    }
+
+    private class SchemaMetadata {
+
     }
 }
