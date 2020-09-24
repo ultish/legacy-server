@@ -3,6 +3,8 @@ package xw.legacyserver.listeners.hibernate;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hibernate.EmptyInterceptor;
+import org.hibernate.Transaction;
+import org.hibernate.collection.spi.PersistentCollection;
 import org.hibernate.engine.spi.CollectionEntry;
 import org.hibernate.envers.RevisionType;
 import org.hibernate.event.spi.*;
@@ -10,8 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
+import xw.legacyserver.entities.IEntity;
 import xw.legacyserver.kafka.KafkaMetadata;
 import xw.legacyserver.kafka.KafkaStreamManager;
+import xw.legacyserver.kafka.KafkaStreamProcess;
+import xw.legacyserver.tools.ClassMetadata;
 
 import java.io.Serializable;
 
@@ -44,142 +49,206 @@ public class CustomKafkaHibernateListener extends EmptyInterceptor implements
     private String kafkaTopic;
 
     private void streamToKafka(
-        AbstractEvent event, RevisionType revisionType,
-        Object o
+        AbstractEvent event, String entityName, KafkaMetadata kafkaMetadata,
+        Object data
     ) {
+        print(kafkaMetadata.getRevType(), data);
 
-        // TODO disabled in favor of CustomAuditStrategy
-        //        if (o != null && o instanceof IEntity) {
-        //
-        //            // we should wrap this message with metadata eg MOD,
-        //            CREATE,
-        //            // DELETE and any other
-        //            //                sendMessage(revisionType, (IEntity) o);
-        //
-        //            IEntity ie = (IEntity) o;
-        //            KafkaMetadata metadata = new KafkaMetadata(
-        //                "",
-        //                revisionType,
-        //                ie.getKey(),
-        //                ie.getClass().getName(),
-        //                0
-        //            );
-        //
-        //            kafkaStreamManager.get(event.getSession())
-        //                .addWork(metadata, ie);
-        //        }
+        RelationshipMetadata relationshipMetadata =
+            ClassMetadata.getSchemaMetadata(entityName);
+
+        final Transaction transaction = event.getSession().getTransaction();
+        KafkaStreamProcess kafkaStreamProcess = kafkaStreamManager.get(
+            transaction);
+
+        kafkaStreamProcess.addWork(kafkaMetadata, data);
+
     }
 
     @Override
     public void onPostUpdate(PostUpdateEvent event) {
         //        System.out.println("test" + event);
         //        print(RevisionType.MOD, event.getEntity());
-        streamToKafka(event, RevisionType.MOD, event.getEntity());
+
+        if (event.getEntity() instanceof IEntity) {
+            IEntity entity = (IEntity) event.getEntity();
+
+            String entityName = entity.getClass().getName();
+
+            RelationshipMetadata relationshipMetadata =
+                ClassMetadata.getSchemaMetadata(entityName);
+
+            KafkaMetadata meta = new KafkaMetadata(
+                "ENTITY",
+                RevisionType.MOD,
+                entity.getKey(),
+                entityName,
+                -1,
+                relationshipMetadata
+            );
+
+            streamToKafka(event, entityName, meta, entity);
+        }
     }
 
     @Override
     public void onPostDelete(PostDeleteEvent event) {
         print(RevisionType.DEL, event.getEntity());
-        streamToKafka(event, RevisionType.DEL, event.getEntity());
+
+        if (event.getEntity() instanceof IEntity) {
+            IEntity entity = (IEntity) event.getEntity();
+
+            String entityName = entity.getClass().getName();
+
+            RelationshipMetadata relationshipMetadata =
+                ClassMetadata.getSchemaMetadata(entityName);
+
+            KafkaMetadata meta = new KafkaMetadata(
+                "ENTITY",
+                RevisionType.DEL,
+                entity.getKey(),
+                entityName,
+                -1,
+                relationshipMetadata
+            );
+
+            streamToKafka(event, entityName, meta, entity);
+        }
     }
 
     @Override
     public void onPostInsert(PostInsertEvent event) {
         print(RevisionType.ADD, event.getEntity());
 
-        streamToKafka(event, RevisionType.ADD, event.getEntity());
+        if (event.getEntity() instanceof IEntity) {
+            IEntity entity = (IEntity) event.getEntity();
+
+            String entityName = entity.getClass().getName();
+
+            RelationshipMetadata relationshipMetadata =
+                ClassMetadata.getSchemaMetadata(entityName);
+
+            KafkaMetadata meta = new KafkaMetadata(
+                "ENTITY",
+                RevisionType.ADD,
+                entity.getKey(),
+                entityName,
+                -1,
+                relationshipMetadata
+            );
+
+            streamToKafka(event, entityName, meta, entity);
+        }
     }
 
-    //    @Override
-    //    public boolean requiresPostCommitHanding(EntityPersister persister) {
-    //        return false;
-    //    }
+    /*
+    TODO Envers uses:
+    - PostCollectionRecreate
+    - PostDelete
+    - PostInsert
+    - PostUpdate
+    - PreCollectionRemove
+    - PreCollectionUpdate
+     */
 
-    @Override
-    public void onPostRecreateCollection(PostCollectionRecreateEvent event) {
-        //        System.out.println("post recreate collection");
-        String ownerEntityName = event.getAffectedOwnerEntityName();
-
+    private void updateCollection(AbstractCollectionEvent event) {
         CollectionEntry collectionEntry = event.getSession()
             .getPersistenceContext()
             .getCollectionEntry(event.getCollection());
 
+        PersistentCollection persistentCollection = event.getCollection();
+
         if (!collectionEntry.getLoadedPersister().isInverse()) {
-            // not recording inverse side of relationships
-
-            //
-            //        // always check if we need to do something with this
-            //        owner entity
-            //        if (ownerEntityName.equals("xw.legacyserver.entities
-            //        .TrackedTask") || ownerEntityName
-            //            .equals("xw.legacyserver.entities.ChargeCode")) {
-
-            Serializable affectedOwnerIdOrNull =
-                event.getAffectedOwnerIdOrNull();
             Object affectedOwnerOrNull = event.getAffectedOwnerOrNull();
+            if (affectedOwnerOrNull != null && affectedOwnerOrNull instanceof IEntity) {
 
-            Object value = event.getCollection().getValue();
+                Serializable affectedOwnerIdOrNull =
+                    event.getAffectedOwnerIdOrNull();
+                String entityName = event.getAffectedOwnerEntityName();
 
-            //            System.out.println("\tName: " + ownerEntityName);
-            //            System.out.println("\tID: " + affectedOwnerIdOrNull);
-            //            System.out.println("\tInverse: " +
-            //                collectionEntry.getLoadedPersister().isInverse());
-            //            print(RevisionType.MOD, affectedOwnerOrNull);
+                RelationshipMetadata relationshipMetadata =
+                    ClassMetadata.getSchemaMetadata(entityName);
 
-            streamToKafka(event, RevisionType.MOD, affectedOwnerOrNull);
-        } else {
-            //            System.out.println("skip " + ownerEntityName);
+                KafkaMetadata meta = new KafkaMetadata(
+                    "REL",
+                    RevisionType.MOD,
+                    affectedOwnerIdOrNull.toString(),
+                    entityName,
+                    -1,
+                    relationshipMetadata
+                );
+
+                streamToKafka(event, entityName, meta, affectedOwnerOrNull);
+            }
         }
-        //        System.out.println("/post recreate collection----------\n");
+
+    }
+
+    @Override
+    public void onPostRecreateCollection(PostCollectionRecreateEvent event) {
+        System.out.println("\npost recreate collection");
+
+        updateCollection(event);
     }
 
     @Override
     public void onPostRemoveCollection(PostCollectionRemoveEvent event) {
-        //        System.out.println("post remove collection");
-
-        String ownerEntityName = event.getAffectedOwnerEntityName();
-        Serializable affectedOwnerIdOrNull =
-            event.getAffectedOwnerIdOrNull();
-        Object affectedOwnerOrNull = event.getAffectedOwnerOrNull();
-
-        Object value = event.getCollection().getValue();
-
+        System.out.println("\npost remove collection");
+        //
+        //        String ownerEntityName = event.getAffectedOwnerEntityName();
+        //        Serializable affectedOwnerIdOrNull =
+        //            event.getAffectedOwnerIdOrNull();
+        //        Object affectedOwnerOrNull = event.getAffectedOwnerOrNull();
+        //
+        //        Object value = event.getCollection().getValue();
+        //
         //        System.out.println("\tName: " + ownerEntityName);
         //        System.out.println("\tID: " + affectedOwnerIdOrNull);
-        //        print(affectedOwnerOrNull);
+        //        System.out.println("\tCollection: " + event.getCollection());
+        //        print(RevisionType.DEL, affectedOwnerOrNull);
+        //
         //        System.out.println("/post remove collection----------\n");
     }
 
     @Override
     public void onPostUpdateCollection(PostCollectionUpdateEvent event) {
-        //        System.out.println("post update collection");
-
-        String ownerEntityName = event.getAffectedOwnerEntityName();
-        Serializable affectedOwnerIdOrNull =
-            event.getAffectedOwnerIdOrNull();
-        Object affectedOwnerOrNull = event.getAffectedOwnerOrNull();
-
-        Object value = event.getCollection().getValue();
-
+        System.out.println("\npost update collection");
+        //
+        //        String ownerEntityName = event.getAffectedOwnerEntityName();
+        //        Serializable affectedOwnerIdOrNull =
+        //            event.getAffectedOwnerIdOrNull();
+        //        Object affectedOwnerOrNull = event.getAffectedOwnerOrNull();
+        //
+        //        Object value = event.getCollection().getValue();
+        //
         //        System.out.println("\tName: " + ownerEntityName);
         //        System.out.println("\tID: " + affectedOwnerIdOrNull);
-        //        print(affectedOwnerOrNull);
+        //        System.out.println("\tCollection: " + event.getCollection());
+        //        print(RevisionType.MOD, affectedOwnerOrNull);
+        //
         //        System.out.println("/post update collection----------\n");
     }
 
     @Override
     public void onPreRemoveCollection(PreCollectionRemoveEvent event) {
-        //        System.out.println("pre remove collection");
+        System.out.println("\npre remove collection");
+        System.out.println(event.getCollection());
+
+        updateCollection(event);
     }
 
     @Override
     public void onPreUpdateCollection(PreCollectionUpdateEvent event) {
-        //        System.out.println("pre update collection");
+        System.out.println("\npre update collection");
+        System.out.println(event.getCollection());
+
+        updateCollection(event);
     }
 
     @Override
     public void onPreRecreateCollection(PreCollectionRecreateEvent event) {
-        //        System.out.println("pre recreate collection");
+        System.out.println("\npre recreate collection");
+        //        System.out.println(event.getCollection());
     }
 
     private void print(

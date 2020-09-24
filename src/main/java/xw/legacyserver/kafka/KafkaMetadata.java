@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.envers.RevisionType;
+import xw.legacyserver.listeners.hibernate.RelationshipMetadata;
 
 @Data
 @AllArgsConstructor
@@ -14,5 +15,6 @@ public class KafkaMetadata {
     String id;
     String entityName;
     int rev;
+    RelationshipMetadata relationships;
 
 }

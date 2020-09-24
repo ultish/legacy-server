@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.hibernate.envers.AuditOverride;
 import org.hibernate.envers.Audited;
 
 import javax.persistence.*;
@@ -48,10 +49,10 @@ public class TrackedTask extends IEntity {
 
     @ToString.Exclude
     //    @JsonIgnoreProperties({"trackedTask", "user"})
-    @OneToMany(mappedBy = "trackedTask")
     @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class,
         property = "id")
     @JsonIdentityReference(alwaysAsId = true)
+    @OneToMany(mappedBy = "trackedTask")
     private List<TimeBlock> timeBlocks;
 
     private Date createdAt;
@@ -60,10 +61,12 @@ public class TrackedTask extends IEntity {
 
     @ToString.Exclude
     //    @JsonIgnoreProperties({"trackedTasks"})
-    @ManyToOne
     @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class,
         property = "id")
     @JsonIdentityReference(alwaysAsId = true)
+    @ManyToOne
+    @JoinColumn(name = "\"userId\"")
+    @AuditOverride(name = "\"userId\"")
     private User user;
 
     @Override

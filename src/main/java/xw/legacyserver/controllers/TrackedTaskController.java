@@ -158,12 +158,41 @@ public class TrackedTaskController {
         if (trackedTask.getChargeCodes().isEmpty()) {
             existing.setChargeCodes(Collections.emptyList());
         } else {
-            existing.setChargeCodes(
-                chargeCodeDAO.findAll()
-                    .stream()
-                    .filter(cc -> trackedTask.getChargeCodes()
-                        .contains(cc.getId()))
-                    .collect(Collectors.toList()));
+
+            List<Integer> existingCCIds = existing.getChargeCodes()
+                .stream()
+                .map(ChargeCode::getId)
+                .collect(
+                    Collectors.toList());
+
+            List<Integer> toRemove = existingCCIds
+                .stream()
+                .filter(existingCC -> !trackedTask.getChargeCodes()
+                    .contains(existingCC))
+                .collect(Collectors.toList());
+
+            List<Integer> newCCIds = trackedTask.getChargeCodes()
+                .stream()
+                .filter(ccId -> !existingCCIds.contains(ccId))
+                .collect(Collectors.toList());
+
+            List<ChargeCode> newCCs = chargeCodeDAO.findAll().stream()
+                .filter(cc -> newCCIds.contains(cc.getId()))
+                .collect(Collectors.toList());
+
+            List<ChargeCode> toRemoveCCs = existing.getChargeCodes().stream()
+                .filter(cc -> toRemove.contains(cc.getId()))
+                .collect(Collectors.toList());
+
+            existing.getChargeCodes().removeAll(toRemoveCCs);
+            existing.getChargeCodes().addAll(newCCs);
+
+            //            existing.setChargeCodes(
+            //                chargeCodeDAO.findAll()
+            //                    .stream()
+            //                    .filter(cc -> trackedTask.getChargeCodes()
+            //                        .contains(cc.getId()))
+            //                    .collect(Collectors.toList()));
         }
 
         if (trackedTask.getTimeBlocks().isEmpty()) {
