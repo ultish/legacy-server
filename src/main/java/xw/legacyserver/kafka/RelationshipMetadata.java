@@ -1,4 +1,4 @@
-package xw.legacyserver.listeners.hibernate;
+package xw.legacyserver.kafka;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

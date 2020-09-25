@@ -6,7 +6,7 @@ import org.reflections.scanners.SubTypesScanner;
 import org.reflections.scanners.TypeAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
-import xw.legacyserver.listeners.hibernate.RelationshipMetadata;
+import xw.legacyserver.kafka.RelationshipMetadata;
 
 import javax.persistence.*;
 import java.lang.reflect.Field;

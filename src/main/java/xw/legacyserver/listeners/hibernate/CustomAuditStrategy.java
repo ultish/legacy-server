@@ -16,6 +16,7 @@ import xw.legacyserver.entities.CustomRevisionEntity;
 import xw.legacyserver.kafka.KafkaMetadata;
 import xw.legacyserver.kafka.KafkaStreamManager;
 import xw.legacyserver.kafka.KafkaStreamProcess;
+import xw.legacyserver.kafka.RelationshipMetadata;
 import xw.legacyserver.tools.ClassMetadata;
 
 import java.io.Serializable;

@@ -39,6 +39,11 @@ public class CustomListenerConfigurer {
 
         registry.getEventListenerGroup(EventType.POST_UPDATE)
             .appendListener(postUpdateEventListener);
+        registry.getEventListenerGroup(EventType.POST_INSERT)
+            .appendListener(postUpdateEventListener);
+        registry.getEventListenerGroup(EventType.POST_DELETE)
+            .appendListener(postUpdateEventListener);
+
         registry.getEventListenerGroup(EventType
             .PRE_COLLECTION_RECREATE)
             .appendListener(postUpdateEventListener);
